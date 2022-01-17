@@ -34,7 +34,7 @@ from geometry_msgs.msg import TwistStamped
 
 roslib.load_manifest('sensor_msgs')
 
-p = r'/media/devil/ZX1_512G/dataset/public/ubran28/sensor_data/data_stamp.csv'
+p = r'/media/devil/ZX1_512G/dataset/public/ubran28/sensor_data/data_stamp(复件).csv'
 
 with open(p) as f:
     data_stamp = np.loadtxt(f,str,delimiter = ",")
@@ -44,33 +44,47 @@ image_path_left = '/media/devil/ZX1_512G/dataset/public/ubran28/image/stereo_lef
 image_path_right = '/media/devil/ZX1_512G/dataset/public/ubran28/image/stereo_right/'
 
 #imu的数据
-imu_path = '/media/devil/ZX1_512G/dataset/public/ubran28/sensor_data/xsens_imu.csv'
+imu_path = '/media/devil/ZX1_512G/dataset/public/ubran28/sensor_data/xsens_imu(复件).csv'
 
 #e的数据
-encoder_path = '/media/devil/ZX1_512G/dataset/public/ubran28/sensor_data/encoder.csv'
+encoder_path = '/media/devil/ZX1_512G/dataset/public/ubran28/sensor_data/encoder(复件).csv'
+
+# imu_dict = {}
+# with codecs.open(imu_path, 'r') as imu:
+#     imu_message = csv.reader(imu)
+#     for imu_key in imu_message:
+#         # print('字典的key值：%s' % imu_key)
+#         imu_reader = csv.DictReader(imu, fieldnames=imu_key)
+#         for row in imu_reader:
+#             imu_dict[row['timestamp']] = [row['quaternion x'], row['quaternion y'], row['quaternion z'], row['quaternion w'], row['Euler x'], row['Euler y'], row['Euler z'], row['Gyro x'], row['Gyro y'], row['Gyro z'], row['Acceleration x'], row['Acceleration y'], row['Acceleration z'], row['MagnetField x'], row['MagnetField y'], row['MagnetField z']]
+#             # a= int(row['timestamp']
+#             # imu_dict.[a]=imu_dict.pop(row['timestamp'])
+imu_data = np.loadtxt(imu_path,str,delimiter = ",")
 
 imu_dict = {}
-with codecs.open(imu_path, 'r') as imu:
-    imu_message = csv.reader(imu)
-    for imu_key in imu_message:
-        # print('字典的key值：%s' % imu_key)
-        imu_reader = csv.DictReader(imu, fieldnames=imu_key)
-        for row in imu_reader:
-            imu_dict[row['timestamp']] = [row['quaternion x'], row['quaternion y'], row['quaternion z'], row['quaternion w'], row['Euler x'], row['Euler y'], row['Euler z'], row['Gyro x'], row['Gyro y'], row['Gyro z'], row['Acceleration x'], row['Acceleration y'], row['Acceleration z'], row['MagnetField x'], row['MagnetField y'], row['MagnetField z']]
+num = imu_data.shape[0]
+for i in range(num):
+    imu_dict[imu_data[i, 0]] = imu_data[i, 1:17]
+
+
+# imu_date_length = range(imu_data[0])
+# encoder_dict = {}
+# with codecs.open(encoder_path, 'r') as encoder:
+#     encoder_message = csv.reader(encoder)
+#     for encoder_key in encoder_message:
+#         # print('字典的key值：%s' % encoder_key)
+#         encoder_reader = csv.DictReader(encoder, fieldnames=encoder_key)
+#         for row in encoder_reader:
+#             encoder_dict[row['timestamp']] = [row['left count'], row['right count']]
             # a= int(row['timestamp']
             # imu_dict.[a]=imu_dict.pop(row['timestamp'])
+encoder_data = np.loadtxt(encoder_path,str,delimiter = ",")
 
 encoder_dict = {}
-with codecs.open(encoder_path, 'r') as encoder:
-    encoder_message = csv.reader(encoder)
-    for encoder_key in encoder_message:
-        # print('字典的key值：%s' % encoder_key)
-        encoder_reader = csv.DictReader(encoder, fieldnames=encoder_key)
-        for row in encoder_reader:
-            encoder_dict[row['timestamp']] = [row['left count'], row['right count']]
-            # a= int(row['timestamp']
-            # imu_dict.[a]=imu_dict.pop(row['timestamp'])
-
+num = encoder_data.shape[0]
+for j in range(num):
+    encoder_dict[encoder_data[j, 0]] = encoder_data[j, 1:]
+# encoder_date_length = range(encoder_data[0])
 # print(imu_dict)
 
 # a = 1544590798706652875
@@ -186,6 +200,7 @@ try:
             imu.header.frame_id = "imu"
 
             temp_timestamp = int(data_stamp[i, 0])
+            a = temp_timestamp
             temp_timestamp = np.asarray([temp_timestamp], dtype=np.float64) / 1e9
             temp_timestamp = temp_timestamp[0]
 
@@ -194,29 +209,29 @@ try:
 
             # kite
 
-            a = float(imu_dict[temp][0])
-            b = float(imu_dict[temp][1])
-            c = float(imu_dict[temp][2])
-            d = float(imu_dict[temp][3])
-            f = float(imu_dict[temp][10])
-            g = float(imu_dict[temp][11])
-            m = float(imu_dict[temp][12])
-            h = float(imu_dict[temp][7])
-            i = float(imu_dict[temp][8])
-            j = float(imu_dict[temp][9])
+            # a = float(imu_data[temp,1 ])
+            # b = float(imu_data[temp][1])
+            # c = float(imu_data[temp][2])
+            # d = float(imu_data[temp][3])
+            # f = float(imu_data[temp][10])
+            # g = float(imu_data[temp][11])
+            # m = float(imu_data[temp][12])
+            # h = float(imu_data[temp][7])
+            # i = float(imu_data[temp][8])
+            # j = float(imu_data[temp][9])
 
-            imu.orientation.x = a
-            imu.orientation.y = b
-            imu.orientation.z = c
-            imu.orientation.w = d
+            imu.orientation.x = float(imu_dict[temp][0])
+            imu.orientation.y = float(imu_dict[temp][1])
+            imu.orientation.z = float(imu_dict[temp][2])
+            imu.orientation.w = float(imu_dict[temp][3])
 
-            imu.linear_acceleration.x = f
-            imu.linear_acceleration.y = g
-            imu.linear_acceleration.z = m
+            imu.linear_acceleration.x = float(imu_dict[temp][10])
+            imu.linear_acceleration.y = float(imu_dict[temp][11])
+            imu.linear_acceleration.z = float(imu_dict[temp][12])
 
-            imu.angular_velocity.x = h
-            imu.angular_velocity.y = i
-            imu.angular_velocity.z = j
+            imu.angular_velocity.x = float(imu_dict[temp][7])
+            imu.angular_velocity.y = float(imu_dict[temp][8])
+            imu.angular_velocity.z = float(imu_dict[temp][9])
 
             bag.write('/imu/data', imu, t=imu.header.stamp)
         elif data_stamp[i, 1] == 'encoder' :
