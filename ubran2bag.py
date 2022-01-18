@@ -34,7 +34,7 @@ from geometry_msgs.msg import TwistStamped
 
 roslib.load_manifest('sensor_msgs')
 
-p = r'/media/devil/ZX1_512G/dataset/public/ubran28/sensor_data/data_stamp.csv'
+p = r'/media/devil/ZX1_512G/dataset/public/ubran28/sensor_data/data_stamp(复件).csv'
 
 with open(p) as f:
     data_stamp = np.loadtxt(f,str,delimiter = ",")
@@ -44,10 +44,10 @@ image_path_left = '/media/devil/ZX1_512G/dataset/public/ubran28/image/stereo_lef
 image_path_right = '/media/devil/ZX1_512G/dataset/public/ubran28/image/stereo_right/'
 
 #imu的数据
-imu_path = '/media/devil/ZX1_512G/dataset/public/ubran28/sensor_data/xsens_imu.csv'
+imu_path = '/media/devil/ZX1_512G/dataset/public/ubran28/sensor_data/xsens_imu(复件).csv'
 
 #e的数据
-encoder_path = '/media/devil/ZX1_512G/dataset/public/ubran28/sensor_data/encoder.csv'
+encoder_path = '/media/devil/ZX1_512G/dataset/public/ubran28/sensor_data/encoder(复件).csv'
 
 # imu_dict = {}
 # with codecs.open(imu_path, 'r') as imu:
@@ -253,8 +253,8 @@ try:
 
             temp = str(data_stamp[i, 0])
 
-            wheel_begin_end = float(encoder_dict[temp][0])
-            wheel_begin_end = float(encoder_dict[temp][1])
+            wheel_end_left = float(encoder_dict[temp][0])
+            wheel_end_right = float(encoder_dict[temp][1])
 
             encoderin = encoderin + 1
 
