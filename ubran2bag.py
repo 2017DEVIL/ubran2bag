@@ -34,7 +34,7 @@ from geometry_msgs.msg import TwistStamped
 
 roslib.load_manifest('sensor_msgs')
 
-p = r'/media/devil/ZX1_512G/dataset/public/ubran28/sensor_data/data_stamp(复件).csv'
+p = r'/media/devil/ZX1_512G/dataset/public/ubran28/sensor_data/data_stamp.csv'
 
 with open(p) as f:
     data_stamp = np.loadtxt(f,str,delimiter = ",")
@@ -44,10 +44,10 @@ image_path_left = '/media/devil/ZX1_512G/dataset/public/ubran28/image/stereo_lef
 image_path_right = '/media/devil/ZX1_512G/dataset/public/ubran28/image/stereo_right/'
 
 #imu的数据
-imu_path = '/media/devil/ZX1_512G/dataset/public/ubran28/sensor_data/xsens_imu(复件).csv'
+imu_path = '/media/devil/ZX1_512G/dataset/public/ubran28/sensor_data/xsens_imu.csv'
 
 #e的数据
-encoder_path = '/media/devil/ZX1_512G/dataset/public/ubran28/sensor_data/encoder(复件).csv'
+encoder_path = '/media/devil/ZX1_512G/dataset/public/ubran28/sensor_data/encoder.csv'
 
 # imu_dict = {}
 # with codecs.open(imu_path, 'r') as imu:
@@ -113,7 +113,7 @@ for j in range(num):
 
 # print(data_stamp.shape[0])
 # fp = open( image_path+"/1544590798702415701"+".png", "r" )
-encoderin = 0
+encoderin = -1
 temp_timestamp_begin = 0
 temp_timestamp_end = 0
 wheel_begin_left = 0
@@ -127,7 +127,7 @@ kr = 0.00047768621928995
 b = 1.52439
 
 try:
-    bag =rosbag.Bag("urban28_1.bag", 'w')
+    bag =rosbag.Bag("urban28_2.bag", 'w')
     num = data_stamp.shape[0]
     for i in range(num):
         if data_stamp[i,1] == 'stereo':
@@ -256,13 +256,15 @@ try:
             wheel_begin_end = float(encoder_dict[temp][0])
             wheel_begin_end = float(encoder_dict[temp][1])
 
+            encoderin = encoderin + 1
+
             if encoderin != 0:
                 left_dist = (wheel_end_left-wheel_begin_left)*kl
                 right_dist = (wheel_end_right - wheel_begin_right) * kl
                 delta_yaw = (right_dist-left_dist)/b
                 delta_dist = (right_dist+left_dist)*0.5
-                timestamp  = (temp_timestamp_begin+temp_timestamp_end)*0.5
-                encoderin = encoderin+1
+                timestamp  = (temp_timestamp_begin.to_sec()+temp_timestamp_end.to_sec())*0.5
+
 
                 encoder.twist.twist.linear.x = delta_dist
                 encoder.twist.twist.linear.y = 0
@@ -270,16 +272,16 @@ try:
                 encoder.twist.twist.angular.x = 0
                 encoder.twist.twist.angular.y = 0
                 encoder.twist.twist.angular.z = delta_yaw
-                encoder.header.stamp = timestamp
+                encoder.header.stamp = rospy.rostime.Time.from_sec(timestamp)
 
-                encoder_wheel.linear.x = delta_dist
-                encoder_wheel.linear.y = 0
-                encoder_wheel.linear.z = 0
-                encoder_wheel.angular.x = 0
-                encoder_wheel.angular.y = 0
-                encoder_wheel.angular.z = delta_yaw
-                encoder_wheel.header.stamp = timestamp
-
+                encoder_wheel.twist.linear.x = delta_dist
+                encoder_wheel.twist.linear.y = 0
+                encoder_wheel.twist.linear.z = 0
+                encoder_wheel.twist.angular.x = 0
+                encoder_wheel.twist.angular.y = 0
+                encoder_wheel.twist.angular.z = delta_yaw
+                encoder_wheel.header.stamp = rospy.rostime.Time.from_sec(timestamp)
+                # t = rospy.rostime.Time.from_sec(encoder.header.stamp)
             #
             # if (i+1)<num:
             #     temp_timestamp = int(data_stamp[i, 0])
@@ -312,9 +314,8 @@ try:
             #
             # encoder.twist.twist.linear.x=m
             # encoder.twist.twist.linear.x = n
-
-                bag.write('/Odometry/encoder', encoder, t=encoder.header.stamp)
-                bag.write('/TwistStamped/encoder', encoder_wheel, t=encoder_wheel.header.stamp)
+                bag.write('/Odometry/encoder', encoder, t = encoder.header.stamp)
+                bag.write('/TwistStamped/encoder', encoder_wheel, t = encoder_wheel.header.stamp)
 
 finally:
     bag.close()
